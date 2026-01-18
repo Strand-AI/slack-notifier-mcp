@@ -14,7 +14,7 @@ MCP server for **bidirectional Slack communication** with Claude Code. Get notif
 claude mcp add slack-notifier -s user \
   -e SLACK_BOT_TOKEN=xoxb-your-token \
   -e SLACK_DEFAULT_CHANNEL=C1234567890 \
-  -- uvx slack-notifier-mcp
+  -- uvx slack-notifier-mcp@latest
 ```
 
 ## Features
@@ -52,13 +52,13 @@ To get your default channel ID:
 claude mcp add slack-notifier -s user \
   -e SLACK_BOT_TOKEN=xoxb-your-token \
   -e SLACK_DEFAULT_CHANNEL=C1234567890 \
-  -- uvx slack-notifier-mcp
+  -- uvx slack-notifier-mcp@latest
 ```
 
 ### VS Code
 
 ```bash
-code --add-mcp '{"name":"slack-notifier","command":"uvx","args":["slack-notifier-mcp"],"env":{"SLACK_BOT_TOKEN":"xoxb-your-token","SLACK_DEFAULT_CHANNEL":"C1234567890"}}'
+code --add-mcp '{"name":"slack-notifier","command":"uvx","args":["slack-notifier-mcp@latest"],"env":{"SLACK_BOT_TOKEN":"xoxb-your-token","SLACK_DEFAULT_CHANNEL":"C1234567890"}}'
 ```
 
 ### Other MCP Clients
@@ -76,7 +76,7 @@ Add to your Claude Desktop config:
   "mcpServers": {
     "slack-notifier": {
       "command": "uvx",
-      "args": ["slack-notifier-mcp"],
+      "args": ["slack-notifier-mcp@latest"],
       "env": {
         "SLACK_BOT_TOKEN": "xoxb-your-token",
         "SLACK_DEFAULT_CHANNEL": "C1234567890"
@@ -93,7 +93,7 @@ Add to your Claude Desktop config:
 
 1. Go to **Settings → MCP → Add new MCP Server**
 2. Select `command` type
-3. Enter command: `uvx slack-notifier-mcp`
+3. Enter command: `uvx slack-notifier-mcp@latest`
 4. Add environment variables for `SLACK_BOT_TOKEN` and `SLACK_DEFAULT_CHANNEL`
 
 Or add to `~/.cursor/mcp.json`:
@@ -102,7 +102,7 @@ Or add to `~/.cursor/mcp.json`:
   "mcpServers": {
     "slack-notifier": {
       "command": "uvx",
-      "args": ["slack-notifier-mcp"],
+      "args": ["slack-notifier-mcp@latest"],
       "env": {
         "SLACK_BOT_TOKEN": "xoxb-your-token",
         "SLACK_DEFAULT_CHANNEL": "C1234567890"
@@ -124,7 +124,7 @@ Any MCP-compatible client can use slack-notifier:
   "mcpServers": {
     "slack-notifier": {
       "command": "uvx",
-      "args": ["slack-notifier-mcp"],
+      "args": ["slack-notifier-mcp@latest"],
       "env": {
         "SLACK_BOT_TOKEN": "xoxb-your-token",
         "SLACK_DEFAULT_CHANNEL": "C1234567890"
@@ -227,7 +227,7 @@ Tell Claude Code:
 Run the MCP inspector to test tools:
 
 ```bash
-npx @anthropics/mcp-inspector uvx slack-notifier-mcp
+npx @anthropics/mcp-inspector uvx slack-notifier-mcp@latest
 ```
 
 Check if your token works:
