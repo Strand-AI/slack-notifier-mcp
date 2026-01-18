@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Literal
 
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
+from fastmcp.dependencies import Progress
 
-# Create the MCP server
+from .slack_client import SlackClient, SlackConfig
+
+# Create the MCP server with task support
 mcp = FastMCP(
     "slack-notifier",
     instructions="""Slack notification and communication server for Claude Code.
@@ -22,8 +26,17 @@ Environment variables required:
 - SLACK_USER_ID: Optional user ID for @mentions (get from Slack profile)
 
 The user can reply to your messages in Slack threads, and you can
-retrieve their responses using the ask_user tool or get_thread_replies.""",
+retrieve their responses using the ask_user tool or get_thread_replies.
+
+The ask_user tool supports background execution - it will return a task ID
+immediately and you can continue working while waiting for the user's reply.""",
 )
+
+
+def _get_client() -> SlackClient:
+    """Get or create a Slack client."""
+    config = SlackConfig.from_env()
+    return SlackClient(config)
 
 
 @mcp.tool()
@@ -51,18 +64,22 @@ def notify(
     return _notify(message=message, channel=channel, urgency=urgency, mention_user=mention_user)
 
 
-@mcp.tool()
-def ask_user(
+@mcp.tool(task=True)
+async def ask_user(
     question: str,
     channel: str | None = None,
     context: str | None = None,
     timeout_minutes: int = 5,
+    progress: Progress = Progress(),
 ) -> dict:
     """Send a question to the user via Slack and wait for their reply.
 
     Use this when you need user input or a decision. The user will be notified
-    and can reply in the Slack thread. This will BLOCK until the user replies
-    or the timeout is reached.
+    and can reply in the Slack thread.
+
+    This tool supports BACKGROUND EXECUTION - when called as a task, it returns
+    immediately with a task ID. You can continue working and check for the result
+    later. The task completes when the user replies or the timeout is reached.
 
     Args:
         question: The question to ask the user.
@@ -73,14 +90,96 @@ def ask_user(
     Returns:
         Dict with success status and user's reply text if received.
     """
-    from .tools.messaging import ask_user as _ask_user
+    client = _get_client()
 
-    return _ask_user(
-        question=question,
-        channel=channel,
-        context=context,
-        timeout_minutes=timeout_minutes,
+    # Cap timeout at 30 minutes
+    timeout_minutes = min(timeout_minutes, 30)
+    timeout_seconds = timeout_minutes * 60
+
+    # Format the question message
+    if context:
+        formatted_message = (
+            f":question: *Claude Code needs your input*\n\n"
+            f"*Context:* {context}\n\n"
+            f"*Question:* {question}\n\n"
+            f"_Reply in this thread within {timeout_minutes} minutes._"
+        )
+    else:
+        formatted_message = (
+            f":question: *Claude Code needs your input*\n\n"
+            f"{question}\n\n"
+            f"_Reply in this thread within {timeout_minutes} minutes._"
+        )
+
+    # Report progress: sending question
+    await progress.set_message("Sending question to Slack...")
+
+    # Send the question
+    send_result = client.send_message(text=formatted_message, channel=channel)
+
+    if not send_result.ok:
+        return {
+            "success": False,
+            "message": f"Failed to send question: {send_result.error}",
+            "error": send_result.error,
+            "reply": None,
+        }
+
+    # Report progress: waiting for reply
+    await progress.set_message(f"Waiting for reply (up to {timeout_minutes} min)...")
+    await progress.set_total(timeout_seconds)
+
+    # Poll for reply with progress updates
+    poll_interval = 5  # seconds
+    elapsed = 0
+
+    while elapsed < timeout_seconds:
+        # Check for replies
+        replies = client.get_thread_replies(
+            channel=send_result.channel,
+            thread_ts=send_result.ts,
+            since_ts=None,
+        )
+
+        if replies:
+            reply = replies[0]  # Get the first reply
+            # Send acknowledgment
+            client.send_message(
+                text=":white_check_mark: Got it, thanks!",
+                channel=send_result.channel,
+                thread_ts=send_result.ts,
+            )
+
+            return {
+                "success": True,
+                "message": "Received user reply",
+                "reply": reply.text,
+                "replied_by": reply.user_name or reply.user,
+                "user_id": reply.user,
+                "ts": reply.ts,
+                "channel": send_result.channel,
+                "thread_ts": send_result.ts,
+            }
+
+        # Update progress
+        await progress.set_current(elapsed)
+        await asyncio.sleep(poll_interval)
+        elapsed += poll_interval
+
+    # Timeout reached
+    client.send_message(
+        text=f":hourglass: No reply received after {timeout_minutes} minutes. Continuing without input.",
+        channel=send_result.channel,
+        thread_ts=send_result.ts,
     )
+
+    return {
+        "success": False,
+        "message": f"No reply received within {timeout_minutes} minutes",
+        "reply": None,
+        "channel": send_result.channel,
+        "thread_ts": send_result.ts,
+    }
 
 
 @mcp.tool()

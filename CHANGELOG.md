@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-01-17
+
+### Added
+- **MCP Tasks support** for async `ask_user` execution via FastMCP 2.x
+- Background task execution - `ask_user` can now run as a non-blocking task
+- Progress reporting during long waits for user replies
+- Async polling for Slack thread replies with configurable intervals
+
+### Changed
+- Switched from official MCP SDK to FastMCP 2.x for enhanced task support
+- `ask_user` is now an async function with `task=True` decorator
+- Improved wait loop with 5-second polling intervals instead of blocking wait
+
 ## [0.1.0] - 2025-01-17
 
 ### Added
