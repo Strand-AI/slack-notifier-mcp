@@ -13,7 +13,7 @@ MCP server for **bidirectional Slack communication** with Claude Code. Get notif
 # Add to Claude Code (one command)
 claude mcp add slack-notifier -s user \
   -e SLACK_BOT_TOKEN=xoxb-your-token \
-  -e SLACK_DEFAULT_CHANNEL=C1234567890 \
+  -e SLACK_DEFAULT_CHANNEL=YOUR-CHANNEL-ID \
   -- uvx slack-notifier-mcp@latest
 ```
 
@@ -51,14 +51,14 @@ To get your default channel ID:
 ```bash
 claude mcp add slack-notifier -s user \
   -e SLACK_BOT_TOKEN=xoxb-your-token \
-  -e SLACK_DEFAULT_CHANNEL=C1234567890 \
+  -e SLACK_DEFAULT_CHANNEL=YOUR-CHANNEL-ID \
   -- uvx slack-notifier-mcp@latest
 ```
 
 ### VS Code
 
 ```bash
-code --add-mcp '{"name":"slack-notifier","command":"uvx","args":["slack-notifier-mcp@latest"],"env":{"SLACK_BOT_TOKEN":"xoxb-your-token","SLACK_DEFAULT_CHANNEL":"C1234567890"}}'
+code --add-mcp '{"name":"slack-notifier","command":"uvx","args":["slack-notifier-mcp@latest"],"env":{"SLACK_BOT_TOKEN":"xoxb-your-token","SLACK_DEFAULT_CHANNEL":"YOUR-CHANNEL-ID"}}'
 ```
 
 ### Other MCP Clients
@@ -79,7 +79,7 @@ Add to your Claude Desktop config:
       "args": ["slack-notifier-mcp@latest"],
       "env": {
         "SLACK_BOT_TOKEN": "xoxb-your-token",
-        "SLACK_DEFAULT_CHANNEL": "C1234567890"
+        "SLACK_DEFAULT_CHANNEL": "YOUR-CHANNEL-ID"
       }
     }
   }
@@ -105,7 +105,7 @@ Or add to `~/.cursor/mcp.json`:
       "args": ["slack-notifier-mcp@latest"],
       "env": {
         "SLACK_BOT_TOKEN": "xoxb-your-token",
-        "SLACK_DEFAULT_CHANNEL": "C1234567890"
+        "SLACK_DEFAULT_CHANNEL": "YOUR-CHANNEL-ID"
       }
     }
   }
@@ -127,7 +127,7 @@ Any MCP-compatible client can use slack-notifier:
       "args": ["slack-notifier-mcp@latest"],
       "env": {
         "SLACK_BOT_TOKEN": "xoxb-your-token",
-        "SLACK_DEFAULT_CHANNEL": "C1234567890"
+        "SLACK_DEFAULT_CHANNEL": "YOUR-CHANNEL-ID"
       }
     }
   }
@@ -199,7 +199,7 @@ Check for new replies in a thread.
 
 ```python
 get_thread_replies(
-    channel="C1234567890",
+    channel="YOUR-CHANNEL-ID",
     thread_ts="1234567890.123456",
     since_ts="1234567891.000000"  # Only newer messages
 )
