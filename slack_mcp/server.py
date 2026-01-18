@@ -28,8 +28,9 @@ Environment variables required:
 The user can reply to your messages in Slack threads, and you can
 retrieve their responses using the ask_user tool or get_thread_replies.
 
-The ask_user tool supports background execution - it will return a task ID
-immediately and you can continue working while waiting for the user's reply.""",
+IMPORTANT: The ask_user tool BLOCKS while waiting for a reply. To run it
+non-blocking, wrap the call in a background task/agent. This allows you to
+continue working while waiting for the user's Slack reply.""",
 )
 
 
@@ -75,11 +76,19 @@ async def ask_user(
     """Send a question to the user via Slack and wait for their reply.
 
     Use this when you need user input or a decision. The user will be notified
-    and can reply in the Slack thread.
+    and can reply in the Slack thread. This will BLOCK until the user replies
+    or the timeout is reached.
 
-    This tool supports BACKGROUND EXECUTION - when called as a task, it returns
-    immediately with a task ID. You can continue working and check for the result
-    later. The task completes when the user replies or the timeout is reached.
+    IMPORTANT - NON-BLOCKING USAGE: To avoid blocking, run this tool in a
+    background agent/task. Example with Claude Code's Task tool:
+
+        Task(
+            prompt="Call ask_user with question='Your question here'",
+            run_in_background=True
+        )
+
+    This lets you continue working while waiting for the Slack reply. You'll
+    be notified when the background task completes with the user's response.
 
     Args:
         question: The question to ask the user.

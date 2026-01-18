@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-01-17
+
+### Changed
+- Updated server instructions to explain blocking behavior of ask_user
+- Added example in ask_user docstring showing how to run non-blocking with Task tool
+- Clearer documentation for agents on async usage pattern
+
 ## [0.2.0] - 2025-01-17
 
 ### Added
