@@ -19,7 +19,7 @@ claude mcp add slack-notifier -s user \
 
 ## Features
 
-- **Notify** - Send notifications when tasks complete, errors occur, or when stepping away
+- **Send Messages** - Send messages with optional urgency levels and thread support
 - **Ask & Wait** - Ask questions and wait for replies via Slack threads
 - **Bidirectional** - Reply to Claude from Slack, get responses back in your terminal
 - **Urgency Levels** - Normal, important, and critical notifications with appropriate formatting
@@ -147,21 +147,39 @@ uv run slack-notifier-mcp
 
 ## MCP Tools
 
-### `notify`
+### `send`
 
-Send a notification to Slack.
+Send a message to Slack with optional urgency and thread support.
 
 ```python
-notify(
-    message="GPU instance is ready! SSH: ubuntu@192.168.1.100",
-    urgency="important"  # or "normal", "critical"
+# Simple message
+send(message="Build completed successfully")
+
+# With urgency (adds formatting and @here for critical)
+send(
+    message="Server is down!",
+    urgency="critical"  # or "normal", "important"
+)
+
+# Reply in a thread
+send(
+    message="Done with the first step, moving on...",
+    thread_ts="1234567890.123456"
+)
+
+# Mention user
+send(
+    message="Need your attention",
+    mention_user=True
 )
 ```
 
 **Parameters:**
-- `message` (required): Notification text (supports Slack mrkdwn)
+- `message` (required): Message text (supports Slack mrkdwn)
 - `channel` (optional): Channel ID or name (uses default if not set)
+- `thread_ts` (optional): Thread timestamp to reply in a thread
 - `urgency` (optional): `normal`, `important`, or `critical`
+- `mention_user` (optional): If true, @mentions the configured user
 
 ### `ask_user`
 
@@ -181,17 +199,6 @@ ask_user(
 - `channel` (optional): Channel ID or name
 - `context` (optional): Additional context about what you're working on
 - `timeout_minutes` (optional): How long to wait (default 5, max 30)
-
-### `send_message`
-
-Lower-level message sending for conversational use.
-
-```python
-send_message(
-    message="Done with the first step, moving on...",
-    thread_ts="1234567890.123456"  # Reply in thread
-)
-```
 
 ### `get_thread_replies`
 

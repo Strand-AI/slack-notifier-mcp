@@ -40,31 +40,6 @@ def _get_client() -> SlackClient:
     return SlackClient(config)
 
 
-@mcp.tool()
-def notify(
-    message: str,
-    channel: str | None = None,
-    urgency: Literal["normal", "important", "critical"] = "normal",
-    mention_user: bool = False,
-) -> dict:
-    """Send a notification message to Slack.
-
-    Use this to notify the user about task completion, errors, or when you need their input.
-
-    Args:
-        message: The notification message. Supports Slack mrkdwn formatting.
-        channel: Channel name or ID. Uses SLACK_DEFAULT_CHANNEL if not specified.
-        urgency: Message urgency level. 'critical' adds @here mention.
-        mention_user: If True, @mentions the configured user (requires SLACK_USER_ID).
-
-    Returns:
-        Dict with success status, message timestamp, and channel.
-    """
-    from .tools.messaging import notify as _notify
-
-    return _notify(message=message, channel=channel, urgency=urgency, mention_user=mention_user)
-
-
 @mcp.tool(task=True)
 async def ask_user(
     question: str,
@@ -192,27 +167,34 @@ async def ask_user(
 
 
 @mcp.tool()
-def send_message(
+def send(
     message: str,
     channel: str | None = None,
     thread_ts: str | None = None,
+    urgency: Literal["normal", "important", "critical"] = "normal",
+    mention_user: bool = False,
 ) -> dict:
     """Send a message to a Slack channel or thread.
-
-    Lower-level than notify() - use this for conversational messages or
-    when you need to reply in a specific thread.
 
     Args:
         message: Message text. Supports Slack mrkdwn formatting.
         channel: Channel name or ID. Uses SLACK_DEFAULT_CHANNEL if not specified.
         thread_ts: Thread timestamp to reply in a thread.
+        urgency: Message urgency level. 'critical' adds @here mention.
+        mention_user: If True, @mentions the configured user (requires SLACK_USER_ID).
 
     Returns:
         Dict with success status and message details.
     """
-    from .tools.messaging import send_message as _send_message
+    from .tools.messaging import send as _send
 
-    return _send_message(message=message, channel=channel, thread_ts=thread_ts)
+    return _send(
+        message=message,
+        channel=channel,
+        thread_ts=thread_ts,
+        urgency=urgency,
+        mention_user=mention_user,
+    )
 
 
 @mcp.tool()

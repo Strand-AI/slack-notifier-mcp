@@ -15,9 +15,8 @@ def test_tools_registered():
     from slack_mcp.server import mcp
 
     tool_names = list(mcp._tool_manager._tools.keys())
-    assert "notify" in tool_names
+    assert "send" in tool_names
     assert "ask_user" in tool_names
-    assert "send_message" in tool_names
     assert "get_thread_replies" in tool_names
 
 

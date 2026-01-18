@@ -13,59 +13,6 @@ def _get_client() -> SlackClient:
     return SlackClient(config)
 
 
-def notify(
-    message: str,
-    channel: str | None = None,
-    urgency: Literal["normal", "important", "critical"] = "normal",
-    mention_user: bool = False,
-) -> dict:
-    """Send a notification message to Slack.
-
-    Use this to notify the user about task completion, errors, or when you need their input.
-
-    Args:
-        message: The notification message. Supports Slack mrkdwn formatting.
-        channel: Channel name or ID. Uses SLACK_DEFAULT_CHANNEL if not specified.
-        urgency: Message urgency level. 'critical' adds @here mention.
-        mention_user: If True, @mentions the configured user (requires SLACK_MY_USER_ID).
-
-    Returns:
-        Dict with success status, message timestamp, and channel.
-    """
-    client = _get_client()
-
-    # Add user mention if requested
-    mention_prefix = ""
-    if mention_user:
-        mention = client.mention_user()
-        if mention:
-            mention_prefix = f"{mention} "
-
-    # Format message based on urgency
-    if urgency == "critical":
-        formatted_message = f"{mention_prefix}<!here> :rotating_light: *CRITICAL*\n{message}"
-    elif urgency == "important":
-        formatted_message = f"{mention_prefix}:warning: *Important*\n{message}"
-    else:
-        formatted_message = f"{mention_prefix}{message}"
-
-    result = client.send_message(text=formatted_message, channel=channel)
-
-    if result.ok:
-        return {
-            "success": True,
-            "message": "Notification sent successfully",
-            "ts": result.ts,
-            "channel": result.channel,
-        }
-    else:
-        return {
-            "success": False,
-            "message": f"Failed to send notification: {result.error}",
-            "error": result.error,
-        }
-
-
 def ask_user(
     question: str,
     channel: str | None = None,
@@ -160,27 +107,43 @@ def ask_user(
         }
 
 
-def send_message(
+def send(
     message: str,
     channel: str | None = None,
     thread_ts: str | None = None,
+    urgency: Literal["normal", "important", "critical"] = "normal",
+    mention_user: bool = False,
 ) -> dict:
     """Send a message to a Slack channel or thread.
-
-    Lower-level than notify() - use this for conversational messages or
-    when you need to reply in a specific thread.
 
     Args:
         message: Message text. Supports Slack mrkdwn formatting.
         channel: Channel name or ID. Uses SLACK_DEFAULT_CHANNEL if not specified.
         thread_ts: Thread timestamp to reply in a thread.
+        urgency: Message urgency level. 'critical' adds @here mention.
+        mention_user: If True, @mentions the configured user (requires SLACK_USER_ID).
 
     Returns:
         Dict with success status and message details.
     """
     client = _get_client()
 
-    result = client.send_message(text=message, channel=channel, thread_ts=thread_ts)
+    # Add user mention if requested
+    mention_prefix = ""
+    if mention_user:
+        mention = client.mention_user()
+        if mention:
+            mention_prefix = f"{mention} "
+
+    # Format message based on urgency
+    if urgency == "critical":
+        formatted_message = f"{mention_prefix}<!here> :rotating_light: *CRITICAL*\n{message}"
+    elif urgency == "important":
+        formatted_message = f"{mention_prefix}:warning: *Important*\n{message}"
+    else:
+        formatted_message = f"{mention_prefix}{message}"
+
+    result = client.send_message(text=formatted_message, channel=channel, thread_ts=thread_ts)
 
     if result.ok:
         return {

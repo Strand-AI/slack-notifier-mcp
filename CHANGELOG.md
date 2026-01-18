@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-01-17
+
+### Changed
+- **BREAKING**: Merged `notify` and `send_message` tools into single `send` tool
+- `send` now supports all features: urgency levels, thread replies, and user mentions
+
+### Removed
+- `notify` tool (use `send` with `urgency` parameter instead)
+- `send_message` tool (use `send` with `thread_ts` parameter instead)
+
 ## [0.2.1] - 2025-01-17
 
 ### Changed
